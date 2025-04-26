@@ -7,6 +7,7 @@ export type Term = Variable | StringConst | BoolConst;
 export interface Clause {
   relation: string;
   terms: Term[];
+  negated?: boolean; // optional negation
 }
 
 export interface Predicate {
@@ -122,8 +123,21 @@ function evaluate(program: Program): Program {
           const relation = newComputed[clause.relation] ?? program.nodes[clause.relation];
           if (!relation || !isRelation(relation)) return;
 
-          // For each current binding, attempt to unify against clause facts
-          bindings = bindings.flatMap(binding => {
+          if (clause.negated) {
+            // keep bindings that do NOT unify with any row
+            bindings = bindings.filter(b =>
+              !relation.facts.some(row => unify(clause.terms, row, b))
+            );
+          } else {
+            // positive clause
+            bindings = bindings.flatMap(binding => {
+              return relation.facts.reduce((acc, row) => {
+                const unified = unify(clause.terms, row, binding);
+                if (unified) acc.push(unified);
+                return acc;
+              }, [] as Record<string, Term>[]);
+            });
+          }(binding => {
             return relation.facts.reduce((acc, row) => {
               const unified = unify(clause.terms, row, binding);
               if (unified) acc.push(unified);
@@ -247,6 +261,29 @@ test('unification', () => {
   assert.strictEqual(conflictBinding, null);
 });
 
+// --- Negation test: a succeeds when p(X) and not q(X)
+test('negation predicate', () => {
+  const v = (name: string): Variable => ({ type: 'variable', name });
+  const s = (value: string): StringConst => ({ type: 'string', value });
+
+  const program: Program = {
+    nodes: {
+      p: relation([[s('a')], [s('b')]]),
+      q: relation([[s('b')]]),
+      a: predicate([v('X')], [
+        [
+          { relation: 'p', terms: [v('X')] },
+          { relation: 'q', terms: [v('X')], negated: true }
+        ]
+      ])
+    },
+    computed: {}
+  };
+
+	validate(program);
+  const result = evaluate(program).computed['a'].facts;
+  assert.deepStrictEqual(result.map(f => f.map(t => ('value' in t ? t.value : t.name)).join()), ['a']);
+});
 
 
 // --- Example integration: Document-based inference ---
@@ -270,7 +307,9 @@ function buildProgram(docs: Doc[]): Program {
   // equal(Name)
   nodes['equal'] = relation(
     [
-      [b(true), b(true)]
+      [b(true), b(true)],
+      [b(false), b(false)],
+      [s('partial'), s('partial')],
     ]
   );
 
@@ -343,6 +382,43 @@ function buildProgram(docs: Doc[]): Program {
     ]
   );
 
+  // Currently the inferred result will show true if all infered cases are true & false if all are false,
+  // and have results for both true and false if only a part of the inference check is correct
+  // that means we need to check the result afterwards looking for mixed results to indicate a negative inference
+	nodes['inference_check_mixed'] = predicate(
+    [ v('Doc'), v('Id') ],
+    [
+      [
+        { relation: 'inference_check', terms: [ v('Doc'), v('Id'), b(true) ] },
+        { relation: 'inference_check', terms: [ v('Doc'), v('Id'), b(false) ] },
+      ]
+    ]
+  );
+
+  //inference_check_stratified(Doc, Id, true)  :-  inference_check(Doc, Id, true),  not inference_check_mixed(Doc, Id).
+  //inference_check_stratified(Doc, Id, false) :-  inference_check(Doc, Id, false), not inference_check_mixed(Doc, Id).
+  //inference_check_stratified(Doc, Id, partial) :-  inference_check_mixed(Doc, Id).
+  nodes['inference_check_stratified'] = predicate(
+    [ v('Doc'), v('Id'), v('Value') ],
+    [
+      [
+        { relation: 'inference_check', terms: [ v('Doc'), v('Id'), b(true) ] },
+        { relation: 'inference_check_mixed', terms: [ v('Doc'), v('Id') ], negated: true },
+        { relation: 'equal', terms: [ v('Value'), b(true) ] },
+      ],
+      [
+        { relation: 'inference_check', terms: [ v('Doc'), v('Id'), b(false) ] },
+        { relation: 'inference_check_mixed', terms: [ v('Doc'), v('Id') ], negated: true },
+        { relation: 'equal', terms: [ v('Value'), b(false) ] },
+      ],
+      [
+        { relation: 'inference_check_mixed', terms: [ v('Doc'), v('Id') ], },
+        { relation: 'equal', terms: [ v('Value'), s('partial') ] },
+      ],
+    ]
+  );
+
+
   return { nodes, computed: {} };
 }
 
@@ -362,7 +438,7 @@ export function prettyPrint(program: Program): string {
       node.rules.forEach(rule => {
         const body = rule.map(clause => {
           const terms = clause.terms.map(t => ('value' in t ? t.value : t.name)).join(', ');
-          return `${clause.relation}(${terms})`;
+          return `${clause.negated ? 'not ' : ''}${clause.relation}(${terms})`;
         }).join(", \n\t");
         out += `${name}(${args}) :- ${"\n\t"}${body}.${"\n\n"}`;
       });
@@ -375,7 +451,7 @@ export function prettyPrint(program: Program): string {
 // Example documents
 const doc0: Doc = {
   name: 'backlog',
-  assumptions: [ { id: 1, value: true, text: 'We use Jira for our backlog' } ],
+  assumptions: [ { id: 1, value: false, text: 'We use Jira for our backlog' } ],
   infer: []
 };
 
@@ -385,7 +461,7 @@ const doc1: Doc = {
   assumptions: [
     { id: 1, value: true, text: 'Postgres is an open source database' },
     { id: 2, value: true, text: 'Postgres is free' },
-    { id: 3, value: false, text: 'Postgres works with Node.js' }
+    { id: 3, value: true, text: 'Postgres works with Node.js' }
   ],
   infer: [
     { id: 4, text: 'We decided to go for Postgres', dependsOn: [1,2,3] },
@@ -408,7 +484,3 @@ Object.entries(evaluated.computed).forEach(([name, rel]) => {
     console.log(`${name}(${fact.map(t => ('value' in t ? t.value : t.name)).join(', ')})`);
   });
 });
-
-// Currently the inferred result will show true if all infered cases are true & false if all are false,
-// and have results for both true and false if only a part of the inference check is correct
-// that means we need to check the result afterwards looking for mixed results to indicate a negative inference

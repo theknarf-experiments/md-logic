@@ -15,9 +15,11 @@ export interface Predicate {
   rules: Clause[][];
 }
 
+export type Fact = Term[];
+
 export interface Relation {
   type: "Relation";
-  facts: Term[][];
+  facts: Fact[];
 }
 
 export type Node = Predicate | Relation;
@@ -28,7 +30,7 @@ export interface Program {
 }
 
 // Node constructors
-function relation(facts: Term[][]): Relation {
+function relation(facts: Fact[]): Relation {
   return {
     type: "Relation",
     facts
@@ -110,7 +112,7 @@ function evaluate(program: Program): Program {
       if (!isPredicate(node)) return;
 
       const oldFacts = newComputed[name]?.facts ?? [];
-      const newFacts: Term[][] = [];
+      const newFacts: Fact[] = [];
 
       node.rules.forEach(rule => {
         let bindings = [{} as Record<string, Term>];

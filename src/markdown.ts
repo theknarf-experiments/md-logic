@@ -49,12 +49,12 @@ export function mdToDoc(markdown: string, fileName = 'doc.md'): Doc {
 
       // find inlineCode either inside this listItem or in the next sibling
       let code: any = null;
-      visit(subList, 'text', (n:any)=>{ if (!code) code = n; });
+      visit(subList, 'inlineCode', (n:any)=>{ if (!code) code = n; });
 
       const parseCodeNode = (codeNode) => {
-        // "`1 & 2 & $import`"
-        const expr  = codeNode.value.match(/`([^`]*)`/);
-        const deps = expr[1].split('&')
+        // "1 & 2 & $import"
+        const expr  = codeNode.value.trim();
+        const deps = expr.split('&')
           .map(s => s.trim())
           .map(x => x.startsWith('$') ? x.slice(1) : +x);
 

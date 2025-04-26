@@ -4,7 +4,7 @@ import { mdToDoc } from './markdown';
 import { Doc } from './document';
 
 test('markdown → Doc', () => {
-  const md = String.raw`
+  const md = `
 import backlog from './backlog.md';
 
 - [x] Postgres is an open source database
@@ -26,8 +26,8 @@ import backlog from './backlog.md';
       { id: 3, value: false, text: 'Postgres works with Node.js' }
     ],
     infer: [
-      { id: 4, text: 'We decided to go for Postgres',        dependsOn: [1,2,3] },
-      { id: 5, text: "We'll add a task to the backlog",     dependsOn: [4,'backlog'] }
+      { id: 4, text: 'We decided to go for Postgres', dependsOn: [1,2,3] },
+      { id: 5, text: "We'll add a task to the backlog", dependsOn: [4,'backlog'] }
     ]
   };
 

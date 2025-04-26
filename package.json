@@ -1,18 +1,14 @@
 {
   "private": true,
   "name": "md-logic",
+  "main": "./src/index.ts",
   "scripts": {
     "start": "tsc --noEmit && node --import tsx ./src/index.ts",
     "test": "tsc --noEmit && node --import tsx --test ./src/*.spec.ts"
   },
-  "devDependencies": {
-    "@types/node": "^22.15.2",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
-  },
-  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0",
   "dependencies": {
     "acorn": "^8.14.1",
+    "glob": "^11.0.2",
     "mdast-util-from-markdown": "^2.0.2",
     "mdast-util-gfm": "^3.1.0",
     "mdast-util-mdxjs-esm": "^2.0.1",
@@ -22,5 +18,11 @@
     "remark-parse": "^11.0.0",
     "unified": "^11.0.5",
     "unist-util-visit": "^5.0.0"
-  }
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@9.15.4+sha512.b2dc20e2fc72b3e18848459b37359a32064663e5627a51e4c74b2c29dd8e8e0491483c3abb40789cfd578bf362fb6ba8261b05f0387d76792ed6e23ea3b1b6a0"
 }

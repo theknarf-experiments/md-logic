@@ -99,77 +99,65 @@ function isRelation(node: Node): node is Relation {
  */
 export function evaluate(program: Program): Program {
   const newComputed: Record<string, Relation> = { ...program.computed };
-
   let changed = true;
   let iterations = 0;
   const MAX_ITERATIONS = 1000;
 
-  // Outer fixpoint loop: keep running until no new facts are added
   while (changed && iterations < MAX_ITERATIONS) {
     iterations++;
     changed = false;
 
-    Object.entries(program.nodes).forEach(([name, node]) => {
-      if (!isPredicate(node)) return;
+    for (const [name, node] of Object.entries(program.nodes)) {
+      if (!isPredicate(node)) continue;
 
-      const oldFacts = newComputed[name]?.facts ?? [];
-      const newFacts: Fact[] = [];
+      const scratch: Fact[] = [];
 
-      node.rules.forEach(rule => {
-        let bindings = [{} as Record<string, Term>];
+      // Evaluate rules sequentially so new facts are visible immediately
+      for (const rule of node.rules) {
+        let bindings: Record<string, Term>[] = [{}];
 
-        rule.forEach(clause => {
-          // Lookup in computed relations first, then base nodes
-          const relation = newComputed[clause.relation] ?? program.nodes[clause.relation];
-          if (!relation || !isRelation(relation)) return;
+        for (const clause of rule) {
+          const rel = newComputed[clause.relation] ?? program.nodes[clause.relation];
+          if (!rel || !isRelation(rel)) { bindings = []; break; }
 
           if (clause.negated) {
-            // keep bindings that do NOT unify with any row
-            bindings = bindings.filter(b =>
-              !relation.facts.some(row => unify(clause.terms, row, b))
-            );
+            bindings = bindings.filter(b => !rel.facts.some(row => unify(clause.terms, row, b)));
           } else {
-            // positive clause
-            bindings = bindings.flatMap(binding => {
-              return relation.facts.reduce((acc, row) => {
-                const unified = unify(clause.terms, row, binding);
-                if (unified) acc.push(unified);
+            bindings = bindings.flatMap(b => {
+              return rel.facts.reduce((acc: Record<string, Term>[], row) => {
+                const u = unify(clause.terms, row, b);
+                if (u) acc.push(u);
                 return acc;
-              }, [] as Record<string, Term>[]);
+              }, []);
             });
-          }(binding => {
-            return relation.facts.reduce((acc, row) => {
-              const unified = unify(clause.terms, row, binding);
-              if (unified) acc.push(unified);
-              return acc;
-            }, [] as Record<string, Term>[]);
-          });
-        });
-
-        // Project the bindings onto the predicate's argument order
-        bindings.forEach(binding => {
-          const projected = node.args.map(v => binding[v.name]);
-          if (projected.every(x => x !== undefined)) {
-            const old = newComputed[name]?.facts ?? [];
-            const exists = old.some(fact => JSON.stringify(fact) === JSON.stringify(projected));
-            if (!exists) {
-              newComputed[name] = relation([...old, projected]);
-              changed = true;
-            }
           }
-        });
-      });
-    });
+          if (bindings.length === 0) break; // early exit
+        }
+
+        // project bindings to facts
+        for (const b of bindings) {
+          const fact = node.args.map(v => b[v.name]);
+          if (fact.every(x => x !== undefined) &&
+              !scratch.some(f => JSON.stringify(f) === JSON.stringify(fact))) {
+            scratch.push(fact as Fact);
+          }
+        }
+      }
+
+      const old = newComputed[name]?.facts ?? [];
+      const diff = scratch.length !== old.length || scratch.some((f,i)=>JSON.stringify(f)!==JSON.stringify(old[i]));
+      if (diff) {
+        newComputed[name] = relation(scratch);
+        changed = true;
+      }
+    }
   }
 
   if (iterations === MAX_ITERATIONS) {
     throw new Error("Exceeded maximum number of iterations, possible infinite loop");
   }
 
-  return {
-    nodes: program.nodes,
-    computed: newComputed
-  };
+  return { nodes: program.nodes, computed: newComputed };
 }
 
 export function unify(pattern: Term[], row: Term[], binding: Record<string, Term>): Record<string, Term> | null {
@@ -284,7 +272,6 @@ test('negation predicate', () => {
   const result = evaluate(program).computed['a'].facts;
   assert.deepStrictEqual(result.map(f => f.map(t => ('value' in t ? t.value : t.name)).join()), ['a']);
 });
-
 
 // --- Example integration: Document-based inference ---
 
@@ -483,3 +470,4 @@ Object.entries(evaluated.computed).forEach(([name, rel]) => {
     console.log(`${name}(${fact.map(t => ('value' in t ? t.value : t.name)).join(', ')})`);
   });
 });
+

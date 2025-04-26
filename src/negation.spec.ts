@@ -7,9 +7,8 @@ import {
 
 const v = (n: string): Variable   => ({ type: 'variable', name: n });
 const s = (x: string): StringConst => ({ type: 'string',  value: x });
-type Fact = Term[];
 
-test('negation incremental-add bug (fails)', () => {
+test('negation incremental-add bug', () => {
   const nodes: Record<string, Node> = {
     /* s(X) :- p(X), not q(X).   -- evaluated first */
     s: predicate(

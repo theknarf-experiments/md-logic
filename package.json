@@ -3,7 +3,7 @@
   "name": "md-logic",
   "scripts": {
     "start": "tsc --noEmit && node --import tsx ./src/datalog.ts",
-    "test": "tsc --noEmit && node --import tsx --test src/datalog.ts"
+    "test": "tsc --noEmit && node --import tsx --test src/*.ts"
   },
   "devDependencies": {
     "@types/node": "^22.15.2",

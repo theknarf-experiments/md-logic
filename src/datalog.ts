@@ -31,14 +31,14 @@ export interface Program {
 }
 
 // Node constructors
-function relation(facts: Fact[]): Relation {
+export function relation(facts: Fact[]): Relation {
   return {
     type: "Relation",
     facts
   };
 }
 
-function predicate(args: Variable[], rules: Clause[][]): Predicate {
+export function predicate(args: Variable[], rules: Clause[][]): Predicate {
   return {
     type: "Predicate",
     args,
@@ -97,7 +97,7 @@ function isRelation(node: Node): node is Relation {
  * @param program The input program containing relations and predicates.
  * @returns A new Program with computed results populated.
  */
-function evaluate(program: Program): Program {
+export function evaluate(program: Program): Program {
   const newComputed: Record<string, Relation> = { ...program.computed };
 
   let changed = true;
@@ -304,15 +304,6 @@ function buildProgram(docs: Doc[]): Program {
   const s = (value: string | number): StringConst => ({ type: 'string', value: value.toString() });
   const b = (value: boolean): BoolConst => ({ type: 'boolean', value });
 
-  // equal(Name)
-  nodes['equal'] = relation(
-    [
-      [b(true), b(true)],
-      [b(false), b(false)],
-      [s('partial'), s('partial')],
-    ]
-  );
-
   // doc(Name)
   nodes['doc'] = relation(
     docs.map(doc => [s(doc.name)])
@@ -395,22 +386,30 @@ function buildProgram(docs: Doc[]): Program {
     ]
   );
 
-  //inference_check_stratified(Doc, Id, true)  :-  inference_check(Doc, Id, true),  not inference_check_mixed(Doc, Id).
-  //inference_check_stratified(Doc, Id, false) :-  inference_check(Doc, Id, false), not inference_check_mixed(Doc, Id).
-  //inference_check_stratified(Doc, Id, partial) :-  inference_check_mixed(Doc, Id).
+  nodes['equal'] = relation(
+    [
+      [b(true), b(true)],
+      [b(false), b(false)],
+      [s('partial'), s('partial')],
+    ]
+  );
+
   nodes['inference_check_stratified'] = predicate(
     [ v('Doc'), v('Id'), v('Value') ],
     [
+      // Check that matches if inference_check is true and no mixed case exists
       [
         { relation: 'inference_check', terms: [ v('Doc'), v('Id'), b(true) ] },
         { relation: 'inference_check_mixed', terms: [ v('Doc'), v('Id') ], negated: true },
         { relation: 'equal', terms: [ v('Value'), b(true) ] },
       ],
+      // Check that matches if inference_check is false and no mixed case exists
       [
         { relation: 'inference_check', terms: [ v('Doc'), v('Id'), b(false) ] },
         { relation: 'inference_check_mixed', terms: [ v('Doc'), v('Id') ], negated: true },
         { relation: 'equal', terms: [ v('Value'), b(false) ] },
       ],
+      // Check that matches if mixed case exists
       [
         { relation: 'inference_check_mixed', terms: [ v('Doc'), v('Id') ], },
         { relation: 'equal', terms: [ v('Value'), s('partial') ] },

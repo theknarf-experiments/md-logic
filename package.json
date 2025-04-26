@@ -2,7 +2,7 @@
   "private": true,
   "name": "md-logic",
   "scripts": {
-    "start": "tsc --noEmit && node --import tsx ./src/document.ts",
+    "start": "tsc --noEmit && node --import tsx ./src/index.ts",
     "test": "tsc --noEmit && node --import tsx --test ./src/*.spec.ts"
   },
   "devDependencies": {

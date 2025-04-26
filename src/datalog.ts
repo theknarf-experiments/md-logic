@@ -183,3 +183,38 @@ export function unify(pattern: Term[], row: Term[], binding: Record<string, Term
 
   return newBinding;
 }
+
+/**
+ * Returns a Datalog-like string representation of the program.
+ */
+export function prettyPrint(program: Program): string {
+  let out = '';
+  for (const [name, node] of Object.entries(program.nodes)) {
+    if (isRelation(node)) {
+      node.facts.forEach(fact => {
+        const vals = fact.map(t => ('value' in t ? t.value : t.name)).join(', ');
+        out += `${name}(${vals})${"\n"}`;
+      });
+    } else {
+      const args = node.args.map(v => v.name).join(', ');
+      node.rules.forEach(rule => {
+        const body = rule.map(clause => {
+          const terms = clause.terms.map(t => ('value' in t ? t.value : t.name)).join(', ');
+          return `${clause.negated ? 'not ' : ''}${clause.relation}(${terms})`;
+        }).join(", \n\t");
+        out += `${name}(${args}) :- ${"\n\t"}${body}.${"\n\n"}`;
+      });
+    }
+    out += "\n";
+  }
+
+	out += "Inferred statements:\n\n";
+
+	Object.entries(program.computed).forEach(([name, rel]) => {
+		rel.facts.forEach(fact => {
+			out += `${name}(${fact.map(t => ('value' in t ? t.value : t.name)).join(', ')})\n`;
+		});
+	});
+
+  return out;
+}

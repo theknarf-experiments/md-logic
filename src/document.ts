@@ -6,14 +6,14 @@ import {
 } from './datalog';
 
 // Document definitions
-interface DocAssumption { id: string | number; value: boolean; text: string; }
-interface DocInference { id: string | number; text: string; dependsOn: Array<string | number>; }
-interface Doc { name: string; import?: string[]; assumptions: DocAssumption[]; infer: DocInference[]; }
+export interface DocAssumption { id: string | number; value: boolean; text: string; }
+export interface DocInference { id: string | number; text: string; dependsOn: Array<string | number>; }
+export interface Doc { name: string; import?: string[]; assumptions: DocAssumption[]; infer: DocInference[]; }
 
 /**
  * Builds a Datalog program from high-level documents.
  */
-function buildProgram(docs: Doc[]): Program {
+export function buildProgram(docs: Doc[]): Program {
   const nodes: Record<string, Node> = {};
 
   // Helper constructors
@@ -137,67 +137,3 @@ function buildProgram(docs: Doc[]): Program {
 
   return { nodes, computed: {} };
 }
-
-/**
- * Returns a Datalog-like string representation of the program.
- */
-export function prettyPrint(program: Program): string {
-  let out = '';
-  for (const [name, node] of Object.entries(program.nodes)) {
-    if (isRelation(node)) {
-      node.facts.forEach(fact => {
-        const vals = fact.map(t => ('value' in t ? t.value : t.name)).join(', ');
-        out += `${name}(${vals})${"\n"}`;
-      });
-    } else {
-      const args = node.args.map(v => v.name).join(', ');
-      node.rules.forEach(rule => {
-        const body = rule.map(clause => {
-          const terms = clause.terms.map(t => ('value' in t ? t.value : t.name)).join(', ');
-          return `${clause.negated ? 'not ' : ''}${clause.relation}(${terms})`;
-        }).join(", \n\t");
-        out += `${name}(${args}) :- ${"\n\t"}${body}.${"\n\n"}`;
-      });
-    }
-    out += "\n";
-  }
-  return out;
-}
-
-// Example documents
-const doc0: Doc = {
-  name: 'backlog',
-  assumptions: [ { id: 1, value: false, text: 'We use Jira for our backlog' } ],
-  infer: []
-};
-
-const doc1: Doc = {
-  name: 'db-decition',
-  import: ['global-assumptions'],
-  assumptions: [
-    { id: 1, value: true, text: 'Postgres is an open source database' },
-    { id: 2, value: true, text: 'Postgres is free' },
-    { id: 3, value: true, text: 'Postgres works with Node.js' }
-  ],
-  infer: [
-    { id: 4, text: 'We decided to go for Postgres', dependsOn: [1,2,3] },
-    { id: 5, text: "We'll add a task to the backlog", dependsOn: [4, 'backlog'] }
-  ]
-};
-
-// Build, evaluate, and inspect results
-const program = buildProgram([doc0, doc1]);
-
-console.log(prettyPrint(program));
-
-validate(program);
-const evaluated = evaluate(program);
-
-console.log('Inferred statements:');
-
-Object.entries(evaluated.computed).forEach(([name, rel]) => {
-  rel.facts.forEach(fact => {
-    console.log(`${name}(${fact.map(t => ('value' in t ? t.value : t.name)).join(', ')})`);
-  });
-});
-

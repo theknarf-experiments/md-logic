@@ -15,6 +15,8 @@ Use it to help planning and decision making, or to keep a decision log.
 
   - `supersede`
 
+- Reference an assumption or inference rule either by number or name
+
 - Imports between documents
 
 - Use CSV files to run a document with multiple inputs

@@ -5,7 +5,7 @@ import { Doc } from './document';
 
 test('markdown → Doc', () => {
   const md = `
-import backlog from './backlog.md';
+import backlog from './backlog.logic.md';
 
 - [x] Postgres is an open source database
 - [x] Postgres is free
@@ -31,6 +31,6 @@ import backlog from './backlog.md';
     ]
   };
 
-  const got = mdToDoc(md, 'db-decition.md');
+  const got = mdToDoc(md, 'db-decition.logic.md');
   assert.deepStrictEqual(got, expected);
 });

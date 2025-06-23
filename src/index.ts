@@ -5,7 +5,7 @@ import { buildProgram, Doc } from './document';
 import { validate, evaluate, prettyPrint } from './datalog';
 import { mdToDoc } from './markdown';
 
-export async function runMarkdownPipeline(pattern = '**/*.md'): Promise<void> {
+export async function runMarkdownPipeline(pattern = '**/*.logic.md'): Promise<void> {
   const files = await glob(pattern, { ignore: 'node_modules/**' });
   const docs: Doc[] = [];
 
@@ -20,7 +20,7 @@ export async function runMarkdownPipeline(pattern = '**/*.md'): Promise<void> {
   console.log(prettyPrint(evaluated));
 }
 
-runMarkdownPipeline('example/**/*.md').catch(err => {
+runMarkdownPipeline('example/**/*.logic.md').catch(err => {
   console.error(err);
   process.exit(1);
 });

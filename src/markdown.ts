@@ -7,7 +7,7 @@ import { mdxjsEsmFromMarkdown }  from 'mdast-util-mdxjs-esm';
 import { visit }                 from 'unist-util-visit';
 import { Doc } from './document';
 
-export function mdToDoc(markdown: string, fileName = 'doc.md'): Doc {
+export function mdToDoc(markdown: string, fileName = 'doc.logic.md'): Doc {
 	const tree = fromMarkdown(markdown, {
 		extensions: [
 			gfm(),
@@ -19,12 +19,12 @@ export function mdToDoc(markdown: string, fileName = 'doc.md'): Doc {
 		mdastExtensions:  [gfmFromMarkdown(), mdxjsEsmFromMarkdown()]
 	});
 
-	const doc: Doc = { name: fileName.replace(/\.md$/,''),
+        const doc: Doc = { name: fileName.replace(/\.logic\.md$/,''),
 		assumptions: [], infer: [] };
 
 	/* -------- collect imports (mdxjsEsm nodes) ------------------------- */
-	visit(tree, 'mdxjsEsm', (node: any) => {
-		const m = node.value.match(/from\s+['"]\.\/([\w-]+)\.md['"]/);
+        visit(tree, 'mdxjsEsm', (node: any) => {
+                const m = node.value.match(/from\s+['"]\.\/([\w-]+)\.logic\.md['"]/);
 		if (m) (doc.import ??= []).push(m[1]);
 	});
 

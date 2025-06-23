@@ -1,4 +1,4 @@
-import backlog from './backlog.md';
+import backlog from './backlog.logic.md';
 
 # Db
 

@@ -198,7 +198,7 @@ $RECYCLE.BIN/
 *.msp
 
 # Generated Nearley grammar
-src/datalog-grammar.*
+src/datalog/datalog-grammar.*
 
 # Windows shortcuts
 *.lnk

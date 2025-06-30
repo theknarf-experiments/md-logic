@@ -4,7 +4,7 @@ import {
   relation, predicate, evaluate,
   Variable, StringConst, Node, Term,
   unify, validate, Program, BoolConst
-} from './datalog';
+} from './index';
 
 const v = (name: string): Variable => ({ type: "variable", name });
 const s = (value: string): StringConst => ({ type: "string", value });

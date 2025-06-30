@@ -218,3 +218,6 @@ export function prettyPrint(program: Program): string {
 
   return out;
 }
+
+// Barrel export for consumers
+export { parseProgram } from './parse';

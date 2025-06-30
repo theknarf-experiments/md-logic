@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseProgram } from './parse';
 import lexer from './lexer';
-import { evaluate, validate } from './datalog';
+import { parseProgram, evaluate, validate } from './index';
 
 function tokens(input: string): string[] {
   lexer.reset(input);

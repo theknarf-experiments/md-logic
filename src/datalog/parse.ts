@@ -11,7 +11,7 @@ import {
   Variable,
   Clause,
   Term,
-} from './datalog';
+} from './index';
 
 interface FactStmt { type: 'fact'; name: string; terms: Term[]; }
 interface RuleStmt { type: 'rule'; name: string; args: string[]; clauses: Clause[]; }

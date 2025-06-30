@@ -3,9 +3,9 @@
   "name": "md-logic",
   "main": "./src/index.ts",
   "scripts": {
-    "build": "nearleyc src/datalog.ne -o src/datalog-grammar.ts",
+    "build": "nearleyc src/datalog/datalog.ne -o src/datalog/datalog-grammar.ts",
     "start": "pnpm run build && tsc --noEmit && node --import tsx ./src/index.ts",
-    "test": "pnpm run build && tsc --noEmit && node --import tsx --test ./src/*.spec.ts"
+    "test": "pnpm run build && tsc --noEmit && node --import tsx --test ./src/**/*.spec.ts"
   },
   "dependencies": {
     "acorn": "^8.14.1",

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@md-logic/datalog':
+        specifier: workspace:*
+        version: link:packages/datalog
       acorn:
         specifier: ^8.14.1
         version: 8.14.1
@@ -29,12 +32,6 @@ importers:
       micromark-extension-mdxjs-esm:
         specifier: ^3.0.0
         version: 3.0.0
-      moo:
-        specifier: ^0.5.2
-        version: 0.5.2
-      nearley:
-        specifier: ^2.20.1
-        version: 2.20.1
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
@@ -47,6 +44,41 @@ importers:
       unist-util-visit:
         specifier: ^5.0.0
         version: 5.0.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.15.2
+        version: 22.15.2
+      tsx:
+        specifier: ^4.19.3
+        version: 4.19.3
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
+  packages/datalog:
+    dependencies:
+      moo:
+        specifier: ^0.5.2
+        version: 0.5.2
+      nearley:
+        specifier: ^2.20.1
+        version: 2.20.1
+    devDependencies:
+      '@types/node':
+        specifier: ^22.15.2
+        version: 22.15.2
+      tsx:
+        specifier: ^4.19.3
+        version: 4.19.3
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+
+  packages/datalog-cli:
+    dependencies:
+      '@md-logic/datalog':
+        specifier: workspace:*
+        version: link:../datalog
     devDependencies:
       '@types/node':
         specifier: ^22.15.2

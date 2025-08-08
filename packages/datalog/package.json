@@ -1,0 +1,18 @@
+{
+  "name": "@md-logic/datalog",
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "nearleyc src/datalog.ne -o src/datalog-grammar.ts",
+    "prepare": "pnpm run build",
+    "test": "pnpm run build && tsc --noEmit && node --import tsx --test ./src/**/*.spec.ts"
+  },
+  "dependencies": {
+    "moo": "^0.5.2",
+    "nearley": "^2.20.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

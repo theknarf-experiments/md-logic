@@ -5,7 +5,7 @@ import {
   Variable, StringConst, Node, Term,
   unify, validate, Program, BoolConst,
   isRelation, isPredicate, prettyPrint
-} from './datalog';
+} from '@md-logic/datalog';
 import { Doc, buildProgram } from './document';
 
 

@@ -3,7 +3,7 @@ import {
   Variable, StringConst, Node, Term,
   unify, validate, Program, BoolConst,
   isRelation, isPredicate
-} from './datalog';
+} from '@md-logic/datalog';
 
 // Document definitions
 export interface DocAssumption { id: string | number; value: boolean; text: string; }

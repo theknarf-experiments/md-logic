@@ -2,7 +2,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { glob } from 'glob';
 import { buildProgram, Doc } from './document';
-import { validate, evaluate, prettyPrint } from './datalog';
+import { validate, evaluate, prettyPrint } from '@md-logic/datalog';
 import { mdToDoc } from './markdown';
 
 export async function runMarkdownPipeline(pattern = '**/*.logic.md'): Promise<void> {

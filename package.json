@@ -3,9 +3,9 @@
   "name": "md-logic",
   "main": "./src/index.ts",
   "scripts": {
-    "build": "nearleyc src/datalog/datalog.ne -o src/datalog/datalog-grammar.ts",
-    "start": "pnpm run build && tsc --noEmit && node --import tsx ./src/index.ts",
-    "test": "pnpm run build && tsc --noEmit && node --import tsx --test ./src/**/*.spec.ts"
+    "start": "tsc --noEmit && node --import tsx ./src/index.ts",
+    "pretest": "pnpm --filter @md-logic/datalog run build",
+    "test": "tsc --noEmit && node --import tsx --test ./src/**/*.spec.ts"
   },
   "dependencies": {
     "acorn": "^8.14.1",
@@ -15,8 +15,7 @@
     "mdast-util-mdxjs-esm": "^2.0.1",
     "micromark-extension-gfm": "^3.0.0",
     "micromark-extension-mdxjs-esm": "^3.0.0",
-    "moo": "^0.5.2",
-    "nearley": "^2.20.1",
+    "@md-logic/datalog": "workspace:*",
     "remark-gfm": "^4.0.1",
     "remark-parse": "^11.0.0",
     "unified": "^11.0.5",

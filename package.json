@@ -4,6 +4,7 @@
   "main": "./src/index.ts",
   "scripts": {
     "start": "tsc --noEmit && node --import tsx ./src/index.ts",
+    "pretest": "pnpm --filter @md-logic/datalog run build",
     "test": "tsc --noEmit && node --import tsx --test ./src/**/*.spec.ts"
   },
   "dependencies": {
